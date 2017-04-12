@@ -8,12 +8,24 @@
   <title>Socket.io Chat Test</title>
 </head>
 <body>
-  <ul id="messages"></ul>
-    <form id='chat-form' action="">
-      <input id="message" autocomplete="off" /><button>Send</button>
+  <div id="login-area">
+    <span class="divider"></span>
+    <form action="" id="login-form">
+      <input id="username" type="text" name="username" placeholder="Your username" required>
+      <input type="submit" value="Go!">
     </form>
+    <div id="error-container"></div>
+  </div>
+  <div></div>
+  <div id="chat" class="hidden">
+    <div class="welcome-msg">Welcome to the chatroom</div>
+    <ul id="messages"></ul>
+    <form id='chat-form' action="">
+      <input id="message" autocomplete="off" placeholder="Your message..." /><button>Send</button>
+    </form>
+  </div>
 
   <script src="/socket.io/socket.io.js"></script>
-  <script src="/public/js/main.js"></script>
+  <script src="/public/js/client.js"></script>
 </body>
 </html>
