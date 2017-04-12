@@ -29,6 +29,7 @@ input:focus {
 	width: 100vw;
 	margin-bottom: 40vh;
 }
+
 #login-form {
 	display: flex;
 	flex-direction: column;
@@ -37,7 +38,6 @@ input:focus {
 	min-width: 28vw;
 	min-height: 20vh;
 }
-
 
 #login-form input[type="text"] {
 	font-family: 'Gotham Rounded';
@@ -62,6 +62,7 @@ input:focus {
 	-webkit-appearance: none;
 	padding: 1em;
 	border: none;
+	border-radius: 5px;
 	background: white;
 	color: crimson;
 	width: 20vw;
@@ -79,21 +80,47 @@ input:focus {
 	box-shadow: 0px 25px 118px -32px rgba(0,0,0,0.75);
 }
 
+#chat {
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.side-container {
+	flex-basis: 12%;
+}
+.chat-container {
+	flex-basis: 88%;
+	display: flex;
+	flex-direction: column;
+}
+
+#online-users {
+	padding: 1em;
+	background: #ebebeb;
+	height: 100vh;
+	flex-basis: 10%
+}
+
+#online-users ul {
+	margin: 0.5em 0 1em 1em;
+}
+
 #chat-form {
 	background: #ebebeb;
 	padding: 1em;
 	display: flex;
 	flex-direction: row;
-	justify-content: space-between;
+	justify-content: flex-start;
 	position: fixed;
 	bottom: 0;
-	width: 100%;
+	width: 88%;
 }
 
 #chat-form input {
 	font-family: 'Gotham Rounded';
 	color: #757575;
 	border: 0;
+	border-radius: 5px;
 	padding: 1.5em;
 	flex-basis: 85%;
 	margin-right: .5%;
@@ -110,6 +137,7 @@ input:focus {
 	color: white;
 	background: #E91E63;
 	border: none;
+	border-radius: 5px;
 	padding: 10px;
 	transition: 0.3s;
 }
@@ -121,6 +149,7 @@ input:focus {
 }
 
 .welcome-msg {
+	flex-basis: 100%;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -133,7 +162,7 @@ input:focus {
 #messages {
 	list-style-type: none;
 	margin: 0;
-	padding: 0;
+	padding: 1em;
 }
 
 #messages li {
