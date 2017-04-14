@@ -40,7 +40,7 @@ I'd love some feedback on my projects. Fork it, if you like.
 
 ## Known issues/bugs
 * Not yet responsive
-* Online users function sometimes overwrites itself on the same line in stead of appending a new list item
+* Online users function sometimes overwrites itself on the same line instead of appending a user as a new list-item
 
 ## Wishlist
 * Completely responsive for use on mobile
