@@ -1,0 +1,23 @@
+
+# Created by https://www.gitignore.io/api/node
+
+### Node ###
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# dotenv environment variables file
+.env
+
+# End of https://www.gitignore.io/api/node
