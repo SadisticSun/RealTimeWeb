@@ -6,3 +6,17 @@ body {
 a {
   color: #00B7FF;
 }
+
+.artist-list {
+  padding-left: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.fav-artist {
+  margin: 0 1em;
+}
+.album-art {
+  max-height: 10em;
+  max-width: 10em;
+}

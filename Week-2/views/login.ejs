@@ -1,12 +1,30 @@
 <!DOCTYPE html>
 <html>
-  <head>
+
+<head>
     <link rel='stylesheet' href='/stylesheets/style.css' />
-  </head>
-  <body>
-  <h1>Channels I am subscribed too</h1>
-  <ul></ul>
+</head>
 
+<body>
+    <header>
+      <h1>Welcome</h1>
 
-  </body>
+    </header>
+
+    <main>
+        <div>
+            <h2>Your favorite artists:</h2>
+            <ol  class="artist-list">
+                <% artists.forEach(function(item) { %>
+                    <li class="fav-artist">
+                        <h3><a href="<%= item.external_urls.spotify %>" target="_blank"><%= item.name %></a></h3>
+                        <img class="album-art" src="<%= item.images[1].url %>">
+                    </li>
+                    <% }) %>
+            </ol>
+        </div>
+    </main>
+
+</body>
+
 </html>

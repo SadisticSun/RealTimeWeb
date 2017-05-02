@@ -1,81 +1,113 @@
-
 /*jshint esversion: 6 */
 
 // Dependencies
-const express = require('express');
-const path = require('path');
-const bodyParser = require('body-parser');
-const app = express();
-const request = require('request');
-const server = require('http').createServer(app);
+const express     = require('express');
+const path        = require('path');
+const bodyParser  = require('body-parser');
+const app         = express();
+const request     = require('request');
+const server      = require('http').createServer(app);
 
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Set up .env support
 const dotenv = require('dotenv').config();
 
 // Get .env variables
-const api_key             = process.env.API_KEY;
-const client_id           = process.env.CLIENT_ID;
-const client_secret       = process.env.CLIENT_SECRET;
-const response_type       = process.env.RESPONSE_TYPE;
-const grant_type          = process.env.GRANT_TYPE;
-const scope               = process.env.SCOPE;
-const redirect_uri        = process.env.REDIRECT_URI;
+const client_id       = process.env.CLIENT_ID;
+const client_secret   = process.env.CLIENT_SECRET;
+const response_type   = process.env.RESPONSE_TYPE;
+const grant_type      = process.env.GRANT_TYPE;
+const scope           = process.env.SCOPE;
+const redirect_uri    = process.env.REDIRECT_URI;
 
-const google_apis          = 'https://www.googleapis.com/';
+// Set empty authorization variables
+var ACCESS_TOKEN;
+var REFRESH_TOKEN;
+var EXPIRATION_DATE;
+
+// Base Request URL
+const base_URL = 'https://accounts.spotify.com/authorize/';
 
 // Authorization Code Request URL
-var request_url =
-'https://accounts.google.com/o/oauth2/auth?client_id='+ client_id + '&redirect_uri=' + redirect_uri + '&scope=' + scope + '&response_type=' + response_type + '&access_type=offline';
+var request_url = base_URL + '?client_id=' + client_id + '&scope=' + scope + '&response_type=' + response_type + '&redirect_uri=' + redirect_uri;
+
 
 // ROUTES
+// -----------------------------------------------------------------------
+
 /* GET home page. */
-app.get('/', function(req, res, next) {
-  res.render('index', {
-    title: 'OAUTH API test',
-    request_url: request_url
-  });
+app.get('/', function(req, res) {
+    res.render('index', {
+        title: 'OAUTH API test',
+        request_url: request_url
+    });
 });
 
 /* GET login page. */
 app.get('/login', function(req, res) {
-  var response_code = req.query.code;
 
-  // Access Token POST request URL
-  var post_url =
-  google_apis + 'oauth2/v4/token?code='+ response_code + '&client_id='+ client_id + '&client_secret=' + client_secret + '&redirect_uri=' + redirect_uri + '&grant_type=' + grant_type;
+    // Save the Authorization Code for later use
+    var response_code = req.query.code;
 
-  // Set empty variables
-  var TOKEN;
-  var REFRESH_TOKEN;
-  var EXPIRATION_DATE;
+    // Access Token POST request options
+    let authOptions = {
+          url: 'https://accounts.spotify.com/api/token',
+          form: {
+            code: response_code,
+            redirect_uri: 'http://localhost:3000/login',
+            grant_type: grant_type
+          },
+          headers: {
+            'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
+          },
+          json: true
+        };
 
-  // Do POST request to Google API
-  request.post(post_url, function (error, response, body) {
-    // Parse response string into JSON
-    parsed_data = JSON.parse(body);
 
-    // Assign properties of the returned JSON to variables for later use
-    TOKEN             = parsed_data.access_token;
-    REFRESH_TOKEN     = parsed_data.refresh_token;
-    EXPIRATION_DATE   = parsed_data.expires_in;
+    // Do POST request to API
+    request.post(authOptions, function(error, response, body) {
+
+      ACCESS_TOKEN = body.access_token;
+      REFRESH_TOKEN = body.refresh_token;
+
+
+
+      if (body.error) {
+        res.render('error', {
+          'error': body.error,
+          'description': body.error_description
+        });
+      } else {
+        let authOptions = {
+          url: 'https://api.spotify.com/v1/me/top/artists',
+          headers: {
+            'Authorization': 'Bearer ' + ACCESS_TOKEN
+          },
+          json: true
+        };
+
+        request.get(authOptions, function(error, response, body) {
+            console.log(body.items[0].external_urls);
+            // getArtists(body.items[0].id);
+            res.render('login', {
+              artists: body.items
+            });
+        });
+      }
 
   });
+});
 
-  request(google_apis + 'youtube/v3/channels?access_token=' + TOKEN + '&part=snippet&mine=true', function(error, response, body) {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log(body);
-    }
-  });
-  res.render('login');
+app.get('/success', function(res, req) {
+
+
+
 });
 
 // Listen to port 3000
