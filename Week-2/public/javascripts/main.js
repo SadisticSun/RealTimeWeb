@@ -18,13 +18,17 @@
 
   socket.on('online-users', function (data) {
     console.log(data);
-    console.log('Aantal online users: ' + data.length);
+    console.log('Online users: ' + data.length);
     updateUsers(data);
   });
 
   socket.on('update-users', function (data) {
     console.log(data);
-    console.log('Aantal online users: ' + data.length);
+    console.log('Online users: ' + data.length);
     updateUsers(data);
   });
+
+  setInterval(function(){
+      socket.emit('update song');
+    }, 2000);
 }());
