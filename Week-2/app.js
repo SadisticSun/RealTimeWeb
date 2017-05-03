@@ -1,12 +1,13 @@
 /*jshint esversion: 6 */
 
 // Dependencies
-const express     = require('express');
-const path        = require('path');
-const bodyParser  = require('body-parser');
-const app         = express();
-const request     = require('request');
-const server      = require('http').createServer(app);
+const express = require('express');
+const path = require('path');
+const bodyParser = require('body-parser');
+const app = express();
+const request = require('request');
+const server = require('http').createServer(app);
+const io = require('socket.io').listen(server);
 
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -19,12 +20,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 const dotenv = require('dotenv').config();
 
 // Get .env variables
-const client_id       = process.env.CLIENT_ID;
-const client_secret   = process.env.CLIENT_SECRET;
-const response_type   = process.env.RESPONSE_TYPE;
-const grant_type      = process.env.GRANT_TYPE;
-const scope           = process.env.SCOPE;
-const redirect_uri    = process.env.REDIRECT_URI;
+const client_id = process.env.CLIENT_ID;
+const client_secret = process.env.CLIENT_SECRET;
+const response_type = process.env.RESPONSE_TYPE;
+const grant_type = process.env.GRANT_TYPE;
+const scope = process.env.SCOPE;
+const redirect_uri = process.env.REDIRECT_URI;
 
 // Set empty authorization variables
 var ACCESS_TOKEN;
@@ -37,6 +38,27 @@ const base_URL = 'https://accounts.spotify.com/authorize/';
 // Authorization Code Request URL
 var request_url = base_URL + '?client_id=' + client_id + '&scope=' + scope + '&response_type=' + response_type + '&redirect_uri=' + redirect_uri;
 
+// Socket IO
+var USERS = [];
+var CONNECTIONS = [];
+
+io.on('connection', function(socket) {
+  CONNECTIONS.push(socket.id);
+  console.log('[Server] New User Connected: %s user(s) connected', CONNECTIONS.length);
+
+  // Emit to all clients the amount of online users
+  io.sockets.emit('online-users', CONNECTIONS.length);
+
+  // Disconnect
+  socket.on('disconnect', function() {
+    CONNECTIONS.splice(CONNECTIONS.indexOf(socket), 1);
+    console.log('[Server] Disconnected: %s user(s) still connected', CONNECTIONS.length);
+    console.log(USERS);
+    // Update the amount of online users to all clients
+    io.sockets.emit('online-users', CONNECTIONS.length);
+});
+
+});
 
 // ROUTES
 // -----------------------------------------------------------------------
@@ -44,7 +66,7 @@ var request_url = base_URL + '?client_id=' + client_id + '&scope=' + scope + '&r
 /* GET home page. */
 app.get('/', function(req, res) {
     res.render('index', {
-        title: 'OAUTH API test',
+        title: 'Spotify <3 Sockets',
         request_url: request_url
     });
 });
@@ -57,57 +79,42 @@ app.get('/login', function(req, res) {
 
     // Access Token POST request options
     let authOptions = {
-          url: 'https://accounts.spotify.com/api/token',
-          form: {
+        url: 'https://accounts.spotify.com/api/token',
+        form: {
             code: response_code,
             redirect_uri: 'http://localhost:3000/login',
             grant_type: grant_type
-          },
-          headers: {
+        },
+        headers: {
             'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
-          },
-          json: true
-        };
-
+        },
+        json: true
+    };
 
     // Do POST request to API
     request.post(authOptions, function(error, response, body) {
 
-      ACCESS_TOKEN = body.access_token;
-      REFRESH_TOKEN = body.refresh_token;
+        ACCESS_TOKEN = body.access_token;
+        REFRESH_TOKEN = body.refresh_token;
 
-
-
-      if (body.error) {
-        res.render('error', {
-          'error': body.error,
-          'description': body.error_description
-        });
-      } else {
-        let authOptions = {
-          url: 'https://api.spotify.com/v1/me/top/artists',
-          headers: {
-            'Authorization': 'Bearer ' + ACCESS_TOKEN
-          },
-          json: true
-        };
-
-        request.get(authOptions, function(error, response, body) {
-            console.log(body.items[0].external_urls);
-            // getArtists(body.items[0].id);
-            res.render('login', {
-              artists: body.items
+        if (body.error) {
+            res.render('error', {
+                'error': body.error,
+                'description': body.error_description
             });
-        });
-      }
-
-  });
-});
-
-app.get('/success', function(res, req) {
-
-
-
+        } else {
+            let authOptions = {
+                url: 'https://api.spotify.com/v1/me/top/artists',
+                headers: {
+                    'Authorization': 'Bearer ' + ACCESS_TOKEN
+                },
+                json: true
+            };
+            request.get(authOptions, function(error, response, body) {
+                    res.render('login', {artists: body.items});
+            });
+        }
+    });
 });
 
 // Listen to port 3000
