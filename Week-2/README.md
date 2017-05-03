@@ -16,6 +16,15 @@ The user is presented a page showing a real-time Twitter stream about the chosen
 
 As an extra feature, a list of currently active users is displayed in the main view.
 
+## Dependencies
+ * Express
+ * Socket.io
+ * Twitter (npm package)
+ * EJS
+ * Dotenv
+ * Request
+ * Compression
+
 ## Known Issues
 * Going to one of the twitter feed pages logs the user out of the 'currently active' state and is thus not visible on the main view for other users.
 * Most Recent Track doesn't update properly
