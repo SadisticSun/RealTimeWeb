@@ -3,28 +3,28 @@
 
   var socket = io();
   var elements = {
-    user_counter: document.getElementById('online-users')
+    online_users: document.getElementById('online-users')
   };
 
+  function updateUsers(users) {
+    var html = '';
+    elements.online_users.innerHTML = html;
+    users.forEach(function(user) {
+      console.log('Online: ' + user);
+      html += '<li>' + user + '</li>';
+      elements.online_users.innerHTML = html;
+    });
+  }
+
   socket.on('online-users', function (data) {
-    console.log('Aantal online users: ' + data);
-    elements.user_counter.innerHTML = data;
+    console.log(data);
+    console.log('Aantal online users: ' + data.length);
+    updateUsers(data);
   });
 
-
-
-
-  // var user_counter = 0;
-  // var user_counter_element = document.getElementById('online-users');
-  //
-  // function incrementUserCounter() {
-  //   user_counter++;
-  //   user_counter_element.innerHTML = user_counter;
-  // }
-  //
-  // function decreaseUserCounter() {
-  //   user_counter--;
-  //   user_counter_element.innerHTML = user_counter;
-  // }
-
+  socket.on('update-users', function (data) {
+    console.log(data);
+    console.log('Aantal online users: ' + data.length);
+    updateUsers(data);
+  });
 }());

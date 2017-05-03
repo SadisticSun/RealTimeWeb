@@ -7,9 +7,13 @@
 
 <body>
     <header>
-      <h1>Welcome</h1>
+      <h1>Welcome <%= user_info.display_name %> </h1>
       <div class="online-users-container">
-        <p>Online users: <span id="online-users"></span></p>
+        <p>Online users:
+          <ul id="online-users">
+
+          </ul>
+        </p>
       </div>
     </header>
 
@@ -17,7 +21,7 @@
         <div>
             <h2>Your favorite artists:</h2>
             <ol  class="artist-list">
-                <% artists.forEach(function(item) { %>
+                <% artists.items.forEach(function(item) { %>
                     <li class="fav-artist">
                         <h3><a href="<%= item.external_urls.spotify %>" target="_blank"><%= item.name %></a></h3>
                         <img class="album-art" src="<%= item.images[1].url %>">
