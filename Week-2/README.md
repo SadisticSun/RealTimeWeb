@@ -39,3 +39,17 @@ As an extra feature, a list of currently active users is displayed in the main v
 * See top artists of other (online) users (profile system)
 * User feedback on data loading (loading spinner)
 * Responsive Design
+
+## Installation
+
+1. Clone this repo
+2. Go to directory
+3. Install dependencies with
+```
+npm install
+```
+4. Run app with
+```
+node app.js
+```
+5. Go to http://localhost:3000 to test app
