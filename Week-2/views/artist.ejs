@@ -6,17 +6,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel='stylesheet' href='/stylesheets/animate.css' />
-  
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+
     <title>Tweets about <%= artist %></title>
 </head>
 
 <body>
-
+  <main class="tweets">
+    <div class="container">
     <h1>Live tweets about <%= artist %></h1>
     <div>
       <ul id="tweets"></ul>
     </div>
 
+    </div>
+  </main>
 
 </body>
 <script src="/socket.io/socket.io.js"></script>

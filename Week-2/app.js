@@ -87,7 +87,7 @@ io.on('connection', function(socket) {
 /* GET home page. */
 app.get('/', function(req, res) {
     res.render('index', {
-        title: 'Spotify <3 Sockets',
+        title: 'Tweetify',
         request_url: request_url
     });
 });
@@ -173,6 +173,7 @@ app.get('/login', function(req, res) {
         // When all goes well, get data from API
         } else {
           getDataFromAPI();
+
           setTimeout(function () {
             res.render('login', {
               user_info: USER_INFO,
@@ -180,6 +181,7 @@ app.get('/login', function(req, res) {
               last_song: NOW_PLAYING
             });
           }, 2000);
+
         }
     });
 });
