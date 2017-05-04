@@ -42,6 +42,33 @@ As an extra feature, a list of currently active users is displayed in the main v
 
 ## Installation
 
+### NOTE: For the app to work you need to create a .env file with the following variables:
+```
+// Spotify: get these at https://developer.spotify.com/my-applications/#!/applications
+
+CLIENT_SECRET=<spotify client secret>
+
+CLIENT_ID=<spotify client ID>
+
+RESPONSE_TYPE=code
+
+GRANT_TYPE=authorization_code
+
+SCOPE=user-top-read user-read-private user-read-currently-playing user-read-playback-state
+
+REDIRECT_URI=http://localhost:3000/login
+
+// Twitter: get these at https://apps.twitter.com/
+
+TWITTER_CONS_KEY=<twitter consumer key>
+
+TWITTER_CONS_SECRET=<twitter consumer secret>
+
+TWITTER_ACCESS_TOKEN=<twitter access token>
+
+TWITTER_TOKEN_SECRET=<twitter token secret>
+```
+
 1. Clone this repo
 2. Go to directory
 3. Install dependencies with
