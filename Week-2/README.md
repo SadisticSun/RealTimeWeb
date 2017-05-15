@@ -1,11 +1,14 @@
 # Real-time Web App with Spotify & Twitter integration
 
 ## TO DO (required)
-1. Use better data model (mongo?)
+1. Use better data model (mongo?), is being sent to client immediately right now. 
 2. Catch network loss. What happens when connection between server and client is lost for a short while?
 3. Multi-user/multi-client support
 4. Deploy to Heroku/Now/DigitalOcean
-5. Elaborate documentation (with code and comments)
+5. Elaborate documentation (with codecomments, screenshots etc.)
+6. Use seperate repo
+7. No nested functions, declare in objects
+8. Use module based setup (ie. routes in router.js)
 
 ## About the app
 This application is the result of the assignments for the course Real Time Web. The assignment was to create a webapplication
