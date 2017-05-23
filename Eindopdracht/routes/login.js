@@ -1,5 +1,5 @@
-const express = require('express');
-const Router = express.Router();
+const express                     = require('express');
+const Router                      = express.Router();
 const request                     = require('request');
 const dotenv                      = require('dotenv').config();
 
@@ -11,12 +11,15 @@ const grant_type                  = process.env.GRANT_TYPE;
 const scope                       = process.env.SCOPE;
 const redirect_uri                = process.env.REDIRECT_URI;
 
+// import models
+const User                        = require('../models/user.js');
+
 // Base Request URL
 const base_URL = 'https://accounts.spotify.com/authorize/';
 var request_url = base_URL + '?client_id=' + client_id + '&scope=' + scope + '&response_type=' + response_type + '&redirect_uri=' + redirect_uri;
 
 Router.get('/login', function(req, res) {
-    console.log(request_url);
+
     // Save the Authorization Code for later use
     var response_code = req.query.code;
 
@@ -75,6 +78,26 @@ Router.get('/login', function(req, res) {
 
           request.get(authOptionsForUserInformation, function(error, response, body) {
             USER_INFO = body;
+            console.log(body);
+
+
+            User.count({_id: body.id}, function (err, count){
+              if (count>0) {
+                console.log('[Server] User found!');
+              } else {
+                User.create({
+                    _id: body.id,
+                    name: body.display_name
+                  }, function (err) {
+                    if (err) {
+                      console.log('[Server] Error adding user to database');
+                      console.log(err);
+                    } else {
+                      console.log('[Server] New User saved to database');
+                    }
+                });
+              }
+            });
 
             // new user hier aanmaken
           });
@@ -90,9 +113,7 @@ Router.get('/login', function(req, res) {
                 song    = body.item.name;
 
             NOW_PLAYING = body;
-            console.log('Body: ');
-            console.log(body);
-            // newUser update field nowPlayingArtist...
+
 
           });
         }

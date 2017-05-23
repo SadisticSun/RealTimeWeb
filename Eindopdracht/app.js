@@ -39,11 +39,9 @@ var EXPIRATION_DATE;
 var CONNECTIONS = [];
 var USERS = [];
 
-// Authorization Code Request URL
 
+// Connect to MongoDB
 mongoose.connect('mongodb://localhost:8000');
-
-
 
 // Routes
 app.use('', indexRouter);
@@ -72,7 +70,7 @@ io.on('connection', function(socket) {
 
 // Start Server
 // ==================================================
-server.listen(3000);
-console.log('[Server] Running on: http://localhost:3000');
+server.listen(4000);
+console.log('[Server] Running on: http://localhost:4000');
 
 module.exports = app;
