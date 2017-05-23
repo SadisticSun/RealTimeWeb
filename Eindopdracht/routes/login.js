@@ -18,6 +18,51 @@ const User                        = require('../models/user.js');
 const base_URL = 'https://accounts.spotify.com/authorize/';
 var request_url = base_URL + '?client_id=' + client_id + '&scope=' + scope + '&response_type=' + response_type + '&redirect_uri=' + redirect_uri;
 
+USER_INFO = {};
+TOP_ARTISTS = {};
+NOW_PLAYING = {};
+
+const dbconfig = {
+  checkForExistingUser: function (user) {
+    // Check if user exists by looking for the user ID in database
+    User.count({_id: user.id}, function (err, count){
+      if (count>0) {
+        console.log('[Server] User already exists in database');
+      } else {
+        User.create({
+            _id: user.id,
+            name: user.display_name
+          }, function (err) {
+            if (err) {
+              console.log('[Server] ERROR: Cannot add user to database');
+              console.log(err);
+            } else {
+              console.log('[Server] New User saved to database');
+            }
+        });
+      }
+    });
+  },
+
+  updateArtistData: function (data) {
+  // Find the current user and update the top 20 artist in database
+    User.findById(USER_INFO.id, function (err, user) {
+      if (err) {
+        console.log('[Server] ERROR: Could not find user by ID');
+      } else {
+        user.artists = data.items;
+        user.save(function (err, user) {
+          if (err) {
+            console.log('[Server] ERROR: Could not update artist data');
+          } else {
+            console.log('[Server] Succesfully updated artist data');
+          }
+        })
+      }
+    })
+  }
+};
+
 Router.get('/login', function(req, res) {
 
     // Save the Authorization Code for later use
@@ -42,9 +87,7 @@ Router.get('/login', function(req, res) {
 
         ACCESS_TOKEN = body.access_token;
         REFRESH_TOKEN = body.refresh_token;
-        USER_INFO = {};
-        TOP_ARTISTS = {};
-        NOW_PLAYING = {};
+
 
 
         var authOptionsForTopArtists = {
@@ -78,36 +121,17 @@ Router.get('/login', function(req, res) {
 
           request.get(authOptionsForUserInformation, function(error, response, body) {
             USER_INFO = body;
-            console.log(body);
-
-
-            User.count({_id: body.id}, function (err, count){
-              if (count>0) {
-                console.log('[Server] User found!');
-              } else {
-                User.create({
-                    _id: body.id,
-                    name: body.display_name
-                  }, function (err) {
-                    if (err) {
-                      console.log('[Server] Error adding user to database');
-                      console.log(err);
-                    } else {
-                      console.log('[Server] New User saved to database');
-                    }
-                });
-              }
-            });
-
-            // new user hier aanmaken
+            dbconfig.checkForExistingUser(body);
           });
 
+          // Get user's top 20 artists
           request.get(authOptionsForTopArtists, function(error, response, body) {
             TOP_ARTISTS = body;
+            dbconfig.updateArtistData(body);
 
-            // newUser update met artiesten info
           });
 
+          // Get user's recently played track
           request.get(authOptionsForNowPlaying, function(error, response, body) {
             var artist  = body.item.album.artists[0].name,
                 song    = body.item.name;
