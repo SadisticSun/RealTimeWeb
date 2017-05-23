@@ -1,18 +1,18 @@
-const express                     = require('express');
-const Router                      = express.Router();
-const request                     = require('request');
-const dotenv                      = require('dotenv').config();
+const express = require('express');
+const Router = express.Router();
+const request = require('request');
+const dotenv = require('dotenv').config();
 
 // Spotify Keys
-const client_id                   = process.env.CLIENT_ID;
-const client_secret               = process.env.CLIENT_SECRET;
-const response_type               = process.env.RESPONSE_TYPE;
-const grant_type                  = process.env.GRANT_TYPE;
-const scope                       = process.env.SCOPE;
-const redirect_uri                = process.env.REDIRECT_URI;
+const client_id = process.env.CLIENT_ID;
+const client_secret = process.env.CLIENT_SECRET;
+const response_type = process.env.RESPONSE_TYPE;
+const grant_type = process.env.GRANT_TYPE;
+const scope = process.env.SCOPE;
+const redirect_uri = process.env.REDIRECT_URI;
 
 // import models
-const User                        = require('../models/user.js');
+const User = require('../models/user.js');
 
 // Base Request URL
 const base_URL = 'https://accounts.spotify.com/authorize/';
@@ -23,47 +23,70 @@ TOP_ARTISTS = {};
 NOW_PLAYING = {};
 
 const dbconfig = {
-  checkForExistingUser: function (user) {
-    // Check if user exists by looking for the user ID in database
-    User.count({_id: user.id}, function (err, count){
-      if (count>0) {
-        console.log('[Server] User already exists in database');
-      } else {
-        User.create({
-            _id: user.id,
-            name: user.display_name
-          }, function (err) {
-            if (err) {
-              console.log('[Server] ERROR: Cannot add user to database');
-              console.log(err);
+    checkForExistingUser: (user) => {
+        // Check if user exists by looking for the user ID in database
+        User.count({
+            _id: user.id
+        }, (err, count) => {
+            if (count > 0) {
+                console.log('[Server] User already exists in database');
             } else {
-              console.log('[Server] New User saved to database');
+                User.create({
+                    _id: user.id,
+                    name: user.display_name
+                }, (err) => {
+                    if (err) {
+                        console.log('[Server] ERROR: Cannot add user to database');
+                        console.log(err);
+                    } else {
+                        console.log('[Server] New User saved to database');
+                    }
+                });
             }
         });
-      }
-    });
-  },
+    },
 
-  updateArtistData: function (data) {
-  // Find the current user and update the top 20 artist in database
-    User.findById(USER_INFO.id, function (err, user) {
-      if (err) {
-        console.log('[Server] ERROR: Could not find user by ID');
-      } else {
-        user.artists = data.items;
-        user.save(function (err, user) {
-          if (err) {
-            console.log('[Server] ERROR: Could not update artist data');
-          } else {
-            console.log('[Server] Succesfully updated artist data');
-          }
+    updateArtistData: (data) => {
+        // Find the current user and update the top 20 artist in database
+        User.findById(USER_INFO.id, (err, user) => {
+            if (err) {
+                console.log('[Server] ERROR: Could not find user by ID trying to update Top Artists');
+            } else {
+                user.artists = data.items;
+                user.save((err, user) => {
+                    if (err) {
+                        console.log('[Server] ERROR: Could not update artist data');
+                    } else {
+                        console.log('[Server] Succesfully updated artist data');
+                    }
+                })
+            }
         })
-      }
-    })
-  }
+    },
+
+    updateNowPlaying: (data) => {
+
+        setTimeout(function() {
+            User.findById(USER_INFO.id, (err, user) => {
+                if (err) {
+                    console.log('[Server] ERROR: Could not find user by ID trying to update Now Playing');
+                } else {
+                    user.nowPlayingArtist.name = data.item.album.artists[0].name;
+                    user.nowPlayingArtist.song = data.item.name;
+                    user.save((err, user) => {
+                        if (err) {
+                            console.log('[Server] ERROR: Could not update Now Playing data');
+                        } else {
+                            console.log('[Server] Succesfully updated Now Playing data');
+                        }
+                    })
+                }
+            })
+        }, 1500)
+    }
 };
 
-Router.get('/login', function(req, res) {
+Router.get('/login', (req, res) => {
 
     // Save the Authorization Code for later use
     var response_code = req.query.code;
@@ -83,12 +106,10 @@ Router.get('/login', function(req, res) {
     };
 
     // Do POST request to API
-    request.post(authOptions, function(error, response, body) {
+    request.post(authOptions, (error, response, body) => {
 
         ACCESS_TOKEN = body.access_token;
         REFRESH_TOKEN = body.refresh_token;
-
-
 
         var authOptionsForTopArtists = {
             url: 'https://api.spotify.com/v1/me/top/artists',
@@ -104,42 +125,39 @@ Router.get('/login', function(req, res) {
                 'Authorization': 'Bearer ' + ACCESS_TOKEN
             },
             json: true
-          };
+        };
 
         var authOptionsForNowPlaying = {
             url: 'https://api.spotify.com/v1/me/player/currently-playing/',
             headers: {
-              'Authorization': 'Bearer ' + ACCESS_TOKEN
+                'Authorization': 'Bearer ' + ACCESS_TOKEN
             },
             json: true
         };
 
         function getDataFromAPI() {
-          console.log('[Server] Getting information...');
+            console.log('[Server] Getting information...');
 
-          var newUser;
+            var newUser;
 
-          request.get(authOptionsForUserInformation, function(error, response, body) {
-            USER_INFO = body;
-            dbconfig.checkForExistingUser(body);
-          });
+            request.get(authOptionsForUserInformation, (error, response, body) => {
+                USER_INFO = body;
+                dbconfig.checkForExistingUser(body);
+            });
 
-          // Get user's top 20 artists
-          request.get(authOptionsForTopArtists, function(error, response, body) {
-            TOP_ARTISTS = body;
-            dbconfig.updateArtistData(body);
+            // Get user's top 20 artists
+            request.get(authOptionsForTopArtists, (error, response, body) => {
+                TOP_ARTISTS = body;
+                dbconfig.updateArtistData(body);
 
-          });
+            });
 
-          // Get user's recently played track
-          request.get(authOptionsForNowPlaying, function(error, response, body) {
-            var artist  = body.item.album.artists[0].name,
-                song    = body.item.name;
+            // Get user's recently played track
+            request.get(authOptionsForNowPlaying, (error, response, body) => {
+                NOW_PLAYING = body;
+                dbconfig.updateNowPlaying(body);
 
-            NOW_PLAYING = body;
-
-
-          });
+            });
         }
 
         // If there's an error in the POST request, render ERROR page
@@ -148,16 +166,17 @@ Router.get('/login', function(req, res) {
                 'error': body.error,
                 'description': body.error_description
             });
-        // When all goes well, get data from API
+            // When all goes well, get data from API
         } else {
-          getDataFromAPI();
-          setTimeout(function () {
-            res.render('login', {
-              user_info: USER_INFO,
-              artists: TOP_ARTISTS,
-              last_song: NOW_PLAYING
-            });
-          }, 2000);
+            getDataFromAPI();
+
+            setTimeout(function() {
+                res.render('login', {
+                    user_info: USER_INFO,
+                    artists: TOP_ARTISTS,
+                    last_song: NOW_PLAYING
+                });
+            }, 2000);
 
         }
     });
