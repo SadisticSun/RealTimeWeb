@@ -5,6 +5,8 @@
   var tweetsContainer = document.getElementById('tweets');
   var tweets = [];
 
+  Offline.options = {checks: {xhr: {url: '/connection-test'}}};
+  
   socket.on('new tweet', function(data) {
     console.log('New tweet: ' + data);
     tweets.push(data.text);

@@ -1,19 +1,22 @@
-const express = require('express')
-const router = express.Router()
+const express = require('express');
+const Router = express.Router();
+const request                     = require('request');
+const dotenv                      = require('dotenv').config();
 
-// Set empty authorization variables
-var ACCESS_TOKEN;
-var REFRESH_TOKEN;
-var EXPIRATION_DATE;
+// Spotify Keys
+const client_id                   = process.env.CLIENT_ID;
+const client_secret               = process.env.CLIENT_SECRET;
+const response_type               = process.env.RESPONSE_TYPE;
+const grant_type                  = process.env.GRANT_TYPE;
+const scope                       = process.env.SCOPE;
+const redirect_uri                = process.env.REDIRECT_URI;
 
 // Base Request URL
 const base_URL = 'https://accounts.spotify.com/authorize/';
+var request_url = base_URL + '?client_id=' + client_id + '&scope=' + scope + '&response_type=' + response_type + '&redirect_uri=' + redirect_uri;
 
-// LOGIN ROUTE
-// ==================================================
-
-/* GET login page. */
-router.get('/login', function(req, res) {
+Router.get('/login', function(req, res) {
+    console.log(request_url);
     // Save the Authorization Code for later use
     var response_code = req.query.code;
 
@@ -68,18 +71,29 @@ router.get('/login', function(req, res) {
         function getDataFromAPI() {
           console.log('[Server] Getting information...');
 
+          var newUser;
+
           request.get(authOptionsForUserInformation, function(error, response, body) {
             USER_INFO = body;
-            USERS.push(body.display_name);
 
+            // new user hier aanmaken
           });
 
           request.get(authOptionsForTopArtists, function(error, response, body) {
             TOP_ARTISTS = body;
+
+            // newUser update met artiesten info
           });
 
           request.get(authOptionsForNowPlaying, function(error, response, body) {
+            var artist  = body.item.album.artists[0].name,
+                song    = body.item.name;
+
             NOW_PLAYING = body;
+            console.log('Body: ');
+            console.log(body);
+            // newUser update field nowPlayingArtist...
+
           });
         }
 
@@ -92,7 +106,6 @@ router.get('/login', function(req, res) {
         // When all goes well, get data from API
         } else {
           getDataFromAPI();
-
           setTimeout(function () {
             res.render('login', {
               user_info: USER_INFO,
@@ -105,4 +118,4 @@ router.get('/login', function(req, res) {
     });
 });
 
-module.exports = router
+module.exports = Router;

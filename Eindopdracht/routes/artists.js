@@ -1,6 +1,7 @@
 const express = require('express');
-const router = express.Router();
-const Twitter = require('twitter');
+const Router = express.Router();
+const Twitter = require('Twitter');
+const dotenv  = require('dotenv').config();
 
 // Twitter Keys
 const twitter_cons_key            = process.env.TWITTER_CONS_KEY;
@@ -15,11 +16,7 @@ var T = new Twitter({
   access_token_secret:            twitter_token_secret
 });
 
-// ARTIST TWEETS ROUTE
-// ==================================================
-
-router.get('/artist/:id', function(req, res) {
-
+Router.get('/artist/:id', function(req, res, next) {
   var twitter_filter = req.params.id;
   console.log(twitter_filter);
 
@@ -33,7 +30,7 @@ router.get('/artist/:id', function(req, res) {
       console.log(`Error: ${err}`);
     });
   });
-  res.render('artist', { artist: twitter_filter });
+  res.render('../views/artist', { artist: twitter_filter });
 });
 
-module.exports = router
+module.exports = Router;

@@ -93,3 +93,15 @@ main {
   justify-content: center;
   align-items: center;
 }
+
+.hidden {
+  display: none;
+}
+
+#error-msg {
+  position: fixed;
+  background-color: crimson;
+  padding: 0 2em;
+  text-align: center;
+  width: 87vw;
+}

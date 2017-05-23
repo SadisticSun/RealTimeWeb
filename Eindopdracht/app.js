@@ -6,15 +6,18 @@ const path                        = require('path');
 const bodyParser                  = require('body-parser');
 const app                         = express();
 const compression                 = require('compression');
-const request                     = require('request');
 const server                      = require('http').createServer(app);
 const io                          = require('socket.io').listen(server);
+const mongoose                    = require('mongoose');
 const dotenv                      = require('dotenv').config();
 
-// Routes
-const indexRoute                  = require('./routes/index.js');
-const loginRoute                  = require('./routes/login.js');
-const artistRoute                 = require('./routes/artist.js');
+// import models
+const User                        = require('./models/user.js');
+
+// import routes
+const artistsRouter               = require('./routes/artists.js');
+const indexRouter                 = require('./routes/index.js');
+const loginRouter                 = require('./routes/login.js');
 
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -24,44 +27,48 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static(path.join(__dirname, 'public')));
 
+console.log(process.env.REDIRECT_URI);
 
 
-// Spotify Keys
-const client_id                   = process.env.CLIENT_ID;
-const client_secret               = process.env.CLIENT_SECRET;
-const response_type               = process.env.RESPONSE_TYPE;
-const grant_type                  = process.env.GRANT_TYPE;
-const scope                       = process.env.SCOPE;
-const redirect_uri                = process.env.REDIRECT_URI;
+// Set empty authorization variables
+var ACCESS_TOKEN;
+var REFRESH_TOKEN;
+var EXPIRATION_DATE;
 
-app.use('/', indexRoute);
-app.use('/login', loginRoute);
-app.use('/artist', artistRoute);
+// Set empty arrays for connections and users
+var CONNECTIONS = [];
+var USERS = [];
+
+// Authorization Code Request URL
+
+mongoose.connect('mongodb://localhost:8000');
+
+
+
+// Routes
+app.use('', indexRouter);
+app.use('/', loginRouter);
+app.use('/', artistsRouter);
+
 
 // Socket IO
 // ==================================================
-var USERS = [];
-var CONNECTIONS = [];
 
 io.on('connection', function(socket) {
   CONNECTIONS.push(socket.id);
   console.log('[Server] New User Connected: %s user(s) connected', CONNECTIONS.length);
 
-  // Emit to all clients the amount of online users
-  io.sockets.emit('online-users', USERS);
+  socket.on('update song', function() {
+
+  })
 
   // Disconnect
   socket.on('disconnect', function() {
-    USERS.splice(USERS.indexOf(socket), 1);
     CONNECTIONS.splice(CONNECTIONS.indexOf(socket), 1);
-
     console.log('[Server] Disconnected: %s user(s) still connected', CONNECTIONS.length);
-    console.log(USERS);
-
-    // Update the amount of online users to all clients
-    io.sockets.emit('update-users', USERS);
   });
 });
+
 
 // Start Server
 // ==================================================

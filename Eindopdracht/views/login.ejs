@@ -2,6 +2,8 @@
 <html>
 
 <head>
+    <link rel='stylesheet' href='/stylesheets/offline.css' />
+    <link rel='stylesheet' href='/stylesheets/offline-language-english.css' />
     <link rel='stylesheet' href='/stylesheets/style.css' />
 </head>
 
@@ -9,17 +11,12 @@
     <header>
         <h1>Welcome</h1>
         <h3><%= user_info.display_name %></h3>
-
-        <div class="online-users-container">
-            <p>Online users:
-                <ul id="online-users">
-
-                </ul>
-            </p>
-        </div>
     </header>
 
     <main>
+        <div id="error-msg" class="hidden">
+          <h3>Warning: You are offline!</h3>
+        </div>
         <div class="now-playing">
             <p>Recently Played: '
                 <%= last_song.item.album.artists[0].name %> -
@@ -38,9 +35,10 @@
             </ol>
         </div>
 
-      
+
 
     </main>
+    <script type="text/javascript" src="/javascripts/offline.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script type="text/javascript" src="/javascripts/main.js"></script>
 </body>
