@@ -1,10 +1,6 @@
 (function() {
   'use strict';
 
-  Offline.options = {checks: {xhr: {url: '/connection-test'}}};
-  var socket = io();
+  var socket = io.connect();
 
-  setInterval(function () {
-      socket.emit('update song');
-    }, 2000);
 }());

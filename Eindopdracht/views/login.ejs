@@ -10,23 +10,21 @@
 <body>
     <header>
         <h1>Welcome</h1>
-        <h3><%= user_info.display_name %></h3>
+        <h3><%= user_data.display_name %></h3>
     </header>
 
     <main>
-        <div id="error-msg" class="hidden">
-          <h3>Warning: You are offline!</h3>
-        </div>
         <div class="now-playing">
             <p>Recently Played: '
                 <%= last_song.item.album.artists[0].name %> -
                     <%= last_song.item.name %>'
             </p>
         </div>
+        <% if (artist_data) { %>
         <div class="fav-artists">
             <h2>Your favorite artists:</h2>
             <ol class="artist-list">
-                <% artists.items.forEach(function(item) { %>
+                <% artist_data.items.forEach(function(item) { %>
                     <li class="fav-artist">
                         <h3><a href="/artist/<%= item.name %>"><%= item.name %></a></h3>
                         <img class="album-art" src="<%= item.images[1].url %>">
@@ -34,12 +32,14 @@
                     <% }) %>
             </ol>
         </div>
+        <% } %>
 
 
 
     </main>
+    <script src="/javascripts/socket.io.js"></script>
     <script type="text/javascript" src="/javascripts/offline.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
+
     <script type="text/javascript" src="/javascripts/main.js"></script>
 </body>
 

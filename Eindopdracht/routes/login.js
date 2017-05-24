@@ -16,15 +16,32 @@ const User = require('../models/user.js');
 
 // Base Request URL
 const base_URL = 'https://accounts.spotify.com/authorize/';
-var request_url = base_URL + '?client_id=' + client_id + '&scope=' + scope + '&response_type=' + response_type + '&redirect_uri=' + redirect_uri;
+var request_url = base_URL + '?client_id=' + client_id + '&scope=' + scope + '&response_type=code&redirect_uri=' + redirect_uri + '&show_dialog=true';
 
-USER_INFO = {};
-TOP_ARTISTS = {};
-NOW_PLAYING = {};
+var USER_INFO = {};
+var ARTIST_DATA = {};
+var LAST_PLAYED = {};
 
+// Access Token POST request options
+var authOptions = {
+    url: 'https://accounts.spotify.com/api/token',
+    form: {
+        code: '',
+        redirect_uri: redirect_url,
+        grant_type: grant_type
+    },
+    headers: {
+        'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
+    },
+    json: true
+};
+
+
+// Database config
 const dbconfig = {
+
+// Check if user exists by looking for the user ID in database. If not, then create new user
     checkForExistingUser: (user) => {
-        // Check if user exists by looking for the user ID in database
         User.count({
             _id: user.id
         }, (err, count) => {
@@ -46,8 +63,8 @@ const dbconfig = {
         });
     },
 
+// Find the current user and update the top 20 artist in database
     updateArtistData: (data) => {
-        // Find the current user and update the top 20 artist in database
         User.findById(USER_INFO.id, (err, user) => {
             if (err) {
                 console.log('[Server] ERROR: Could not find user by ID trying to update Top Artists');
@@ -64,15 +81,15 @@ const dbconfig = {
         })
     },
 
+// Find the current user and update the now playing info in database with a 1.5 second delay
     updateNowPlaying: (data) => {
-
         setTimeout(function() {
             User.findById(USER_INFO.id, (err, user) => {
                 if (err) {
                     console.log('[Server] ERROR: Could not find user by ID trying to update Now Playing');
                 } else {
-                    user.nowPlayingArtist.name = data.item.album.artists[0].name;
-                    user.nowPlayingArtist.song = data.item.name;
+                    user.lastPlayedArtist.name = data.item.album.artists[0].name;
+                    user.lastPlayedArtist.song = data.item.name;
                     user.save((err, user) => {
                         if (err) {
                             console.log('[Server] ERROR: Could not update Now Playing data');
@@ -83,27 +100,24 @@ const dbconfig = {
                 }
             })
         }, 1500)
+    },
+
+    getUserInfo: function () {
+
+      User.findById(USER_INFO.id, (err, user) => {
+        if (err) {
+          console.log('[Server] ERROR: Could not get user information from DB');
+        } else {
+          ARTIST_DATA = user;
+        }
+      });
     }
 };
 
 Router.get('/login', (req, res) => {
 
     // Save the Authorization Code for later use
-    var response_code = req.query.code;
-
-    // Access Token POST request options
-    let authOptions = {
-        url: 'https://accounts.spotify.com/api/token',
-        form: {
-            code: response_code,
-            redirect_uri: 'http://localhost:3000/login',
-            grant_type: grant_type
-        },
-        headers: {
-            'Authorization': 'Basic ' + (new Buffer(client_id + ':' + client_secret).toString('base64'))
-        },
-        json: true
-    };
+    authOptions.code = req.query.code;
 
     // Do POST request to API
     request.post(authOptions, (error, response, body) => {
@@ -136,26 +150,23 @@ Router.get('/login', (req, res) => {
         };
 
         function getDataFromAPI() {
-            console.log('[Server] Getting information...');
-
-            var newUser;
+            console.log('[Server] Getting information from Spotify ...');
 
             request.get(authOptionsForUserInformation, (error, response, body) => {
-                USER_INFO = body;
                 dbconfig.checkForExistingUser(body);
+                USER_INFO = body;
             });
 
             // Get user's top 20 artists
             request.get(authOptionsForTopArtists, (error, response, body) => {
-                TOP_ARTISTS = body;
                 dbconfig.updateArtistData(body);
-
+                ARTIST_DATA = body;
             });
 
             // Get user's recently played track
             request.get(authOptionsForNowPlaying, (error, response, body) => {
-                NOW_PLAYING = body;
                 dbconfig.updateNowPlaying(body);
+                LAST_PLAYED = body;
 
             });
         }
@@ -169,12 +180,13 @@ Router.get('/login', (req, res) => {
             // When all goes well, get data from API
         } else {
             getDataFromAPI();
+            dbconfig.getUserInfo();
 
             setTimeout(function() {
                 res.render('login', {
-                    user_info: USER_INFO,
-                    artists: TOP_ARTISTS,
-                    last_song: NOW_PLAYING
+                    user_data: USER_INFO,
+                    artist_data: ARTIST_DATA,
+                    last_song: LAST_PLAYED
                 });
             }, 2000);
 

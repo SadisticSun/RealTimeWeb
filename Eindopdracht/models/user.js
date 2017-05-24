@@ -4,7 +4,7 @@ var User = mongoose.model('spotifyUser', {
   _id:    String,
   name:   String,
   artists: [],
-  nowPlayingArtist: {
+  lastPlayedArtist: {
     name: String,
     song: String
   }
