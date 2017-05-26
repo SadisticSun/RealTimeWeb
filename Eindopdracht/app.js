@@ -27,14 +27,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// console.log(process.env.REDIRECT_URI);
-
-
-// Set empty authorization variables
-var ACCESS_TOKEN;
-var REFRESH_TOKEN;
-var EXPIRATION_DATE;
-
 // Set empty arrays for connections and users
 var CONNECTIONS = [];
 var USERS = [];
@@ -48,9 +40,7 @@ app.use('', indexRouter);
 app.use('/', loginRouter);
 app.use('/', artistsRouter(io));
 
-// // Start Server
-// // ==================================================
-// server.listen(3000);
-// console.log('[Server] Running on: http://localhost:3000');
+// Start Server
+server.listen(3000);
 
 module.exports = app;
